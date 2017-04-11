@@ -64,7 +64,7 @@ public class AutoTrainer implements Trainer {
      * Set range for hidden neurons of neural network. Auto trainer is looping
      * through that range.
      *
-     * @param range
+     * @param range given for hidden neurons
      */
     public AutoTrainer setHiddenNeurons(Range range) {
         this.minHiddenNeurons = (int) range.getMin();
@@ -76,7 +76,7 @@ public class AutoTrainer implements Trainer {
      * Set range for learning rate of neural network. Auto trainer is looping
      * through that range.
      *
-     * @param range
+     * @param range given for learning rate
      */
     public AutoTrainer setLearningRate(Range range) {
         this.minLearningRate = range.getMin();
@@ -96,7 +96,7 @@ public class AutoTrainer implements Trainer {
     /**
      * Repeat neural network with same parameters and create statistic.
      *
-     * @param times
+     * @param times to repeat network
      */
     public AutoTrainer repeatNetwork(int times) {
         this.repeat = times;
@@ -106,7 +106,7 @@ public class AutoTrainer implements Trainer {
 
     /**
      *
-     * @return
+     * @return if statistic is enabled
      */
     public boolean isStatistics() {
         return statistics;
@@ -151,9 +151,8 @@ public class AutoTrainer implements Trainer {
      *
      * You can get results calling getResults() method.
      *
-     * @param neuralNetwork
-     * @param dataSet
-     * @return
+     * @param neuralNetwork type of neural net
+     * @param dataSet 
      */
     @Override
     public void train(NeuralNetwork neuralNetwork, DataSet dataSet) {// mozda da se vrati Training setting koji je najbolje resenje za dati dataset.??
