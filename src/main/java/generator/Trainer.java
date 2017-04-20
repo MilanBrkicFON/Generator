@@ -1,7 +1,5 @@
 package generator;
 
-import generator.result.TrainingResult;
-import java.util.List;
 import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.data.DataSet;
 
