@@ -33,7 +33,7 @@ public class Util {
         System.out.println("Creating 'result.csv'...");
         StringBuilder sb = new StringBuilder();
         boolean split = trainer.isSplitForTesting();
-        boolean stat = trainer.isStatistics();
+        boolean stat = trainer.generatesStatistics();
 
         //creating header of document
         sb.append("Learinig rate, Hidden Neurons, Momentum, ");

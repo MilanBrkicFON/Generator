@@ -8,7 +8,7 @@ public class TrainingSettings {
     
     private double learningRate;
     private double momentum;
-    private int hiddenNeurons;
+    private int hiddenNeurons;  // todo: add more hidden layers
 
 // procenat za trening i test
     private int trainingSet;

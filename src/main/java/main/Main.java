@@ -30,14 +30,16 @@ public class Main {
     private static final String FILEPATH = "Iris/Iris-dataset-normalised.txt";
 
     public static void main(String[] args) {
+        // maxError, maxIterations i to u TrainingSettings
+        //dodati i transfer function type: sigmoid, Tanh, 
         AutoTrainer trainer = new AutoTrainer()
-                .setHiddenNeurons(new Range(13, 15))
+                .setHiddenNeurons(new Range(13, 15))    // kako dodati jos slojeva neurona?
                 .setLearningRate(new Range(0.3, 0.5))
-                .repeatNetwork(3)
-                .setSplitPercentage(70);
+                .repeat(3)
+                .setTrainTestSplit(70);
 
         DataSet dataSet = DataSet.createFromFile(FILEPATH, 4, 3, "\t", true);
-        trainer.train(new NeuralNetwork(), dataSet);
+        trainer.train(dataSet);
         List<TrainingResult> results = trainer.getResults();
 
         try {

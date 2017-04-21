@@ -15,5 +15,13 @@ public interface Trainer {
      * @param neuralNet
      * @param dataSet
      */
-    public void train(NeuralNetwork neuralNet,DataSet dataSet); 
+    public void train(NeuralNetwork neuralNet, DataSet dataSet); 
+    
+    
+    /**
+     * Traines nn with speciifed data set.
+     * Implementations should generate neural networks automatcaly(internaly)
+     * @param dataSet 
+     */
+    public void train(DataSet dataSet); 
 }

@@ -1,16 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package generator;
 
 import generator.result.TrainingResult;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.data.DataSet;
@@ -37,8 +28,9 @@ public class AutoTrainer implements Trainer {
     private double minLearningRate;
     private int minHiddenNeurons;
     private int splitPercentage = 100;
-    private boolean splitForTesting = false;
+    private boolean splitTrainTest = false;
 
+    private boolean generateStatistics = false;
     private int repeat = 1;
 
     /**
@@ -91,16 +83,16 @@ public class AutoTrainer implements Trainer {
     public void setMaxMomentum(double maxMomentum) {
         this.maxMomentum = maxMomentum;
     }
-    private boolean statistics = false;
+
 
     /**
-     * Repeat neural network with same parameters and create statistic.
+     * Repeat neural network with same parameters specified number of times and create statistic.
      *
      * @param times to repeat network
      */
-    public AutoTrainer repeatNetwork(int times) {
+    public AutoTrainer repeat(int times) {
         this.repeat = times;
-        statistics = true;
+        generateStatistics = true;
         return this;
     }
 
@@ -108,18 +100,18 @@ public class AutoTrainer implements Trainer {
      *
      * @return if statistic is enabled
      */
-    public boolean isStatistics() {
-        return statistics;
+    public boolean generatesStatistics() {
+        return generateStatistics;
     }
 
     /**
-     * Set percentage of training set.
+     * Set percentage of training set (in percents).
      *
      * @param trainingPrecent new value of splitPercentage
      */
-    public AutoTrainer setSplitPercentage(int trainingPrecent) {
+    public AutoTrainer setTrainTestSplit(int trainingPrecent) {
         this.splitPercentage = trainingPrecent;
-        this.splitForTesting = true;
+        this.splitTrainTest = true;
         return this;
     }
 
@@ -128,7 +120,7 @@ public class AutoTrainer implements Trainer {
      * @return true if split
      */
     public boolean isSplitForTesting() {
-        return splitForTesting;
+        return splitTrainTest;
     }
 
     private void generateTrainingSettings() {
@@ -147,6 +139,11 @@ public class AutoTrainer implements Trainer {
         System.out.println("Generated : " + this.trainingSettingsList.size() + " settings.");
     }
 
+    @Override
+    public void train(NeuralNetwork neuralNet, DataSet dataSet) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }    
+    
     /**
      *
      * You can get results calling getResults() method.
@@ -155,9 +152,9 @@ public class AutoTrainer implements Trainer {
      * @param dataSet 
      */
     @Override
-    public void train(NeuralNetwork neuralNetwork, DataSet dataSet) {// mozda da se vrati Training setting koji je najbolje resenje za dati dataset.??
+    public void train(DataSet dataSet) {// mozda da se vrati Training setting koji je najbolje resenje za dati dataset.??
         generateTrainingSettings();
-        List<TrainingResult> StatResults = null;
+        List<TrainingResult> statResults = null;
         DataSet trainingSet, testSet; // validationSet;
 
         // dataSet.split(sizePercents)
@@ -165,34 +162,33 @@ public class AutoTrainer implements Trainer {
         // 2. ako ima samplnga : trening set = % dataseta. test set = % dataseta
         // 3. idradi proceduru treninga sa training setom
         // 4. odradi testiranje sa test setom
-        if (splitForTesting) {
+        if (splitTrainTest) {
             DataSet[] dataSplit = dataSet.sample(splitPercentage); //opet ne radi Maven za neuroph 2.92
             trainingSet = dataSplit[0];
             testSet = dataSplit[1];
-            System.out.println("Data set splited: Training set " + splitPercentage + ", Test set " + (100 - splitPercentage));
-
-        } else {
+           // System.out.println("Data set splited: Training set " + splitPercentage + ", Test set " + (100 - splitPercentage));
+        } else { // use entire dataset for training and testing
             trainingSet = dataSet;
             testSet = dataSet;
         }
 
-        if (statistics) {
-            //return trainNetworkMultipleTimes(dataSet);
-            StatResults = new ArrayList<>();
+        if (generateStatistics) {
+            statResults = new ArrayList<>();
         }
 
-        //List<TrainingResult> trainingResultsList = new ArrayList<>();
-        int i = 1;
+        int trainingNo = 0;
         for (TrainingSettings ts : trainingSettingsList) {
             System.out.println("-----------------------------------------------------------------------------------");
-            System.out.println("##TRAINING: " + i);
+            trainingNo++;
+            System.out.println("##TRAINING: " + trainingNo);
             ts.setTrainingSet(splitPercentage);
             ts.setTestSet(100 - splitPercentage);
-            int j = 1;
-            int pom = this.repeat;
-            do {
-                System.out.println("Subtrening: ");
+            int subtrainNo = 0;
 
+            do {
+               subtrainNo++;
+               System.out.println("#SubTraining: " + subtrainNo);
+                        
                 MultiLayerPerceptron neuralNet
                         = new MultiLayerPerceptron(dataSet.getInputSize(), ts.getHiddenNeurons(), dataSet.getOutputSize());
 
@@ -205,37 +201,34 @@ public class AutoTrainer implements Trainer {
                 neuralNet.learn(dataSet);
 
                 testNeuralNetwork(neuralNet, testSet);
-                TrainingResult result
-                        = new TrainingResult(ts, bp.getTotalNetworkError(), bp.getCurrentIteration());
-                System.out.println(j + ") " + bp.getCurrentIteration());
-                if (statistics) {
-                    StatResults.add(result);
-                    System.out.println("#SubTraining: " + j++);
+                TrainingResult result = new TrainingResult(ts, bp.getTotalNetworkError(), bp.getCurrentIteration());
+                System.out.println(subtrainNo + ") " + bp.getCurrentIteration());
+            
+                if (generateStatistics) {
+                    statResults.add(result);
                 } else {
                     results.add(result);
                 }
 
-            } while (--pom > 0);
-            if (statistics) {
-                TrainingResult tr = doStatistic(ts, StatResults);
-                results.add(tr);
-                StatResults.clear();
-                System.out.println("Done statistic: #Training: " + i);
+            } while (subtrainNo < repeat);
+            
+            if (generateStatistics) {
+                TrainingResult trainingStats = calculateTrainingStatistics(ts, statResults);
+                results.add(trainingStats);
+                statResults.clear();
+//                System.out.println("Done statistic: #Training: " + trainingNo);
             }
-            i++;
 
         }
 
     }
 
-    private TrainingResult doStatistic(TrainingSettings ts, List<TrainingResult> list) {
+    private TrainingResult calculateTrainingStatistics(TrainingSettings ts, List<TrainingResult> results) {
         System.out.println("working on statistic...");
         TrainingResult result = new TrainingResult(ts);
 
-        List<TrainingResult> l = list;
-        System.out.print("(" + l.size() + ")");
-        TrainingStatistics iterationsStat = TrainingStatistics.calculateIterations(list);
-        TrainingStatistics MSEStat = TrainingStatistics.calculateMSE(list);
+        TrainingStatistics iterationsStat = TrainingStatistics.calculateIterations(results);
+        TrainingStatistics MSEStat = TrainingStatistics.calculateMSE(results);
 
         result.setMSE(MSEStat);
         result.setIterationStat(iterationsStat);
@@ -253,4 +246,6 @@ public class AutoTrainer implements Trainer {
 //            System.out.println(" Output: " + Arrays.toString(networkOutput));
         }
     }
+
+
 }
