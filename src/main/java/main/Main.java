@@ -14,6 +14,7 @@ import java.util.List;
 import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.data.DataSet;
 import org.neuroph.nnet.MultiLayerPerceptron;
+import org.neuroph.util.TransferFunctionType;
 import utility.Util;
 
 /**
@@ -33,7 +34,10 @@ public class Main {
         // maxError, maxIterations i to u TrainingSettings
         //dodati i transfer function type: sigmoid, Tanh, 
         AutoTrainer trainer = new AutoTrainer()
-                .setHiddenNeurons(new Range(13, 15))    // kako dodati jos slojeva neurona?
+                .setMaxError(0.04)
+                .setMaxIterations(20000)
+                //.setTransferFunction(TransferFunctionType.TANH) ---- nece da radi sa transfer funkcijom
+                .setHiddenNeurons(new Range(20, 23))    // kako dodati jos slojeva neurona?
                 .setLearningRate(new Range(0.3, 0.5))
                 .repeat(3)
                 .setTrainTestSplit(70);

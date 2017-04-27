@@ -6,8 +6,11 @@ import java.util.List;
 import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.data.DataSet;
 import org.neuroph.core.data.DataSetRow;
+import org.neuroph.core.transfer.Sigmoid;
+import org.neuroph.core.transfer.TransferFunction;
 import org.neuroph.nnet.MultiLayerPerceptron;
 import org.neuroph.nnet.learning.BackPropagation;
+import org.neuroph.util.TransferFunctionType;
 import statistic.TrainingStatistics;
 
 /**
@@ -29,7 +32,10 @@ public class AutoTrainer implements Trainer {
     private int minHiddenNeurons;
     private int splitPercentage = 100;
     private boolean splitTrainTest = false;
-
+    private double maxError;
+    private int maxIterations;
+    private TransferFunctionType transferFunction;
+    
     private boolean generateStatistics = false;
     private int repeat = 1;
 
@@ -39,8 +45,14 @@ public class AutoTrainer implements Trainer {
     public AutoTrainer() {
         trainingSettingsList = new ArrayList<>();
         results = new ArrayList<>();
+        transferFunction = TransferFunctionType.SIGMOID;
     }
 
+    public AutoTrainer(double maxError, int maxIterations) {
+        this();
+        this.maxError = maxError;
+        this.maxIterations = maxIterations;
+    }
     /**
      * Get results.
      *
@@ -76,6 +88,34 @@ public class AutoTrainer implements Trainer {
         return this;
     }
 
+    public double getMaxError() {
+        return maxError;
+    }
+
+    public AutoTrainer setMaxError(double maxError) {
+        this.maxError = maxError;
+        return this;
+    }
+
+    public int getMaxIterations() {
+        return maxIterations;
+    }
+
+    public AutoTrainer setMaxIterations(int maxIterations) {
+        this.maxIterations = maxIterations;
+        return this;
+    }
+
+    public TransferFunctionType getTransferFunction() {
+        return transferFunction;
+    }
+
+    public AutoTrainer setTransferFunction(TransferFunctionType transferFunction) {
+        this.transferFunction = transferFunction;
+        return this;
+    }
+    
+    
     /**
      *
      * @param maxMomentum
@@ -128,7 +168,12 @@ public class AutoTrainer implements Trainer {
         while (minHiddenNeurons <= maxHiddenNeurons) {
             while (minLearningRate <= maxLearningRate) {
                 //MOMENTUM for (double momentum = 0.1; momentum < maxMomentum; momentum += 0.1) { proveriti za sta je potreban momentum i kako se koristi!
-                TrainingSettings ts = new TrainingSettings(minLearningRate, 0.7, minHiddenNeurons);
+                TrainingSettings ts = new TrainingSettings()
+                        .setHiddenNeurons(minHiddenNeurons)
+                        .setLearningRate(minLearningRate)
+                        .setMaxError(getMaxError())
+                        .setMaxIterations(getMaxIterations());
+                
                 this.trainingSettingsList.add(ts);
                 minLearningRate += 0.1;
                 //}
@@ -190,13 +235,13 @@ public class AutoTrainer implements Trainer {
                System.out.println("#SubTraining: " + subtrainNo);
                         
                 MultiLayerPerceptron neuralNet
-                        = new MultiLayerPerceptron(dataSet.getInputSize(), ts.getHiddenNeurons(), dataSet.getOutputSize());
-
+                        = new MultiLayerPerceptron(transferFunction, dataSet.getInputSize(), ts.getHiddenNeurons(), dataSet.getOutputSize());
+                
                 BackPropagation bp = neuralNet.getLearningRule();
 
                 bp.setLearningRate(ts.getLearningRate());
-                bp.setMaxError(0.001);
-                bp.setMaxIterations(20000);
+                bp.setMaxError(ts.getMaxError());
+                bp.setMaxIterations(ts.getMaxIterations());
 
                 neuralNet.learn(dataSet);
 

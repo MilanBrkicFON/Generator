@@ -9,7 +9,9 @@ public class TrainingSettings {
     private double learningRate;
     private double momentum;
     private int hiddenNeurons;  // todo: add more hidden layers
-
+    private double maxError;
+    private int maxIterations;
+    
 // procenat za trening i test
     private int trainingSet;
     private int testSet;
@@ -22,44 +24,72 @@ public class TrainingSettings {
         this.hiddenNeurons = hiddenNeurons;
     }
 
+    TrainingSettings() {
+        this.momentum = 0.7;
+    }
+
     public double getLearningRate() {
         return learningRate;
     }
 
-    public void setLearningRate(double learningRate) {
+    public TrainingSettings setLearningRate(double learningRate) {
         this.learningRate = learningRate;
+        return this;
     }
 
     public double getMomentum() {
         return momentum;
     }
 
-    public void setMomentum(double momentum) {
+    public TrainingSettings setMomentum(double momentum) {
         this.momentum = momentum;
+        return this;
     }
 
     public int getHiddenNeurons() {
         return hiddenNeurons;
     }
 
-    public void setHiddenNeurons(int hiddenNeurons) {
+    public TrainingSettings setHiddenNeurons(int hiddenNeurons) {
         this.hiddenNeurons = hiddenNeurons;
+       return this;
+     }
+
+    public double getMaxError() {
+        return maxError;
     }
 
+    public TrainingSettings setMaxError(double maxError) {
+        this.maxError = maxError;
+        return this;
+    }
+
+    public int getMaxIterations() {
+        return maxIterations;
+    }
+
+    public TrainingSettings setMaxIterations(int maxIterations) {
+        this.maxIterations = maxIterations;
+        return this;
+    }
+
+    
     public int getTrainingSet() {
         return trainingSet;
     }
 
-    public void setTrainingSet(int trainingSet) {
+    public TrainingSettings setTrainingSet(int trainingSet) {
         this.trainingSet = trainingSet;
+        return this;
     }
 
     public int getTestSet() {
         return testSet;
     }
 
-    public void setTestSet(int testSet) {
+    public TrainingSettings setTestSet(int testSet) {
         this.testSet = testSet;
+        return this;
     }
     
     
