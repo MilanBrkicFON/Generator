@@ -1,7 +1,6 @@
-package generator.result;
+package org.neuroph.contrib.autotrain;
 
-import generator.TrainingSettings;
-import statistic.TrainingStatistics;
+import org.neuroph.contrib.autotrain.TrainingSettings;
 
 /**
  *

@@ -3,10 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package utility;
+package org.neuroph.contrib.autotrain;
 
-import generator.AutoTrainer;
-import generator.result.TrainingResult;
+import org.neuroph.contrib.autotrain.AutoTrainer;
+import org.neuroph.contrib.autotrain.TrainingResult;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;

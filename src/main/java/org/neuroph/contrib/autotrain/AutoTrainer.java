@@ -1,6 +1,5 @@
-package generator;
+package org.neuroph.contrib.autotrain;
 
-import generator.result.TrainingResult;
 import java.util.ArrayList;
 import java.util.List;
 import org.neuroph.core.NeuralNetwork;
@@ -11,7 +10,6 @@ import org.neuroph.core.transfer.TransferFunction;
 import org.neuroph.nnet.MultiLayerPerceptron;
 import org.neuroph.nnet.learning.BackPropagation;
 import org.neuroph.util.TransferFunctionType;
-import statistic.TrainingStatistics;
 
 /**
  *
@@ -235,7 +233,7 @@ public class AutoTrainer implements Trainer {
                System.out.println("#SubTraining: " + subtrainNo);
                         
                 MultiLayerPerceptron neuralNet
-                        = new MultiLayerPerceptron(transferFunction, dataSet.getInputSize(), ts.getHiddenNeurons(), dataSet.getOutputSize());
+                        = new MultiLayerPerceptron(dataSet.getInputSize(), ts.getHiddenNeurons(), dataSet.getOutputSize());
                 
                 BackPropagation bp = neuralNet.getLearningRule();
 

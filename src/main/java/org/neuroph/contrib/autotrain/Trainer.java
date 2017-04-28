@@ -1,4 +1,4 @@
-package generator;
+package org.neuroph.contrib.autotrain;
 
 import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.data.DataSet;
