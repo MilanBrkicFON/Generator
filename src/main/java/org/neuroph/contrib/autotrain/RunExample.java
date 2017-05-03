@@ -5,17 +5,10 @@
  */
 package org.neuroph.contrib.autotrain;
 
-import org.neuroph.contrib.autotrain.AutoTrainer;
-import org.neuroph.contrib.autotrain.Range;
-import org.neuroph.contrib.autotrain.TrainingResult;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
 import java.util.List;
-import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.data.DataSet;
-import org.neuroph.nnet.MultiLayerPerceptron;
 import org.neuroph.util.TransferFunctionType;
-import org.neuroph.contrib.autotrain.Util;
 
 /**
  * kako iskoristiti vrednosti iz matrice(TP, TN, FP, FN) kako tokom testiranja
@@ -31,15 +24,13 @@ public class RunExample {
     private static final String FILEPATH = "Iris/Iris-dataset-normalised.txt";
 
     public static void main(String[] args) {
-        // maxError, maxIterations i to u TrainingSettings
-        //dodati i transfer function type: sigmoid, Tanh, 
         AutoTrainer trainer = new AutoTrainer()
                 .setMaxError(0.01)
                 .setMaxIterations(20000)
-                //.setTransferFunction(TransferFunctionType.TANH) ---- nece da radi sa transfer funkcijom
-                .setHiddenNeurons(new Range(20, 23))    // kako dodati jos slojeva neurona?
-                .setLearningRate(new Range(0.3, 0.5))
-                .repeat(3)
+                .setTransferFunction(TransferFunctionType.TRAPEZOID)
+                .setHiddenNeurons(new Range(10, 20),2)    // kako dodati jos slojeva neurona?
+                .setLearningRate(new Range(0.3, 0.9),0.3)
+                .repeat(5)
                 .setTrainTestSplit(70);
 
         DataSet dataSet = DataSet.createFromFile(FILEPATH, 4, 3, "\t", true);

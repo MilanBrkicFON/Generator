@@ -2,11 +2,11 @@ package org.neuroph.contrib.autotrain;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.neuroph.core.NeuralNetwork;
 import org.neuroph.core.data.DataSet;
 import org.neuroph.core.data.DataSetRow;
-import org.neuroph.core.transfer.Sigmoid;
-import org.neuroph.core.transfer.TransferFunction;
 import org.neuroph.nnet.MultiLayerPerceptron;
 import org.neuroph.nnet.learning.BackPropagation;
 import org.neuroph.util.TransferFunctionType;
@@ -16,18 +16,22 @@ import org.neuroph.util.TransferFunctionType;
  * @author Milan
  */
 public class AutoTrainer implements Trainer {
-
+    private final static Logger LOGGER = Logger.getLogger(AutoTrainer.class.getName());
     private List<TrainingSettings> trainingSettingsList;
 
     private List<TrainingResult> results;
 
     // Range(min, Max)
     private int maxHiddenNeurons;
-    private double maxLearningRate;
-    private double maxMomentum = 0.9;
-
-    private double minLearningRate;
     private int minHiddenNeurons;
+    private int hiddenNeuronsStep = 1;
+    
+    private double minLearningRate;
+    private double maxLearningRate;
+    private double learningRateStep = 0.1;
+    
+    private double maxMomentum = 0.9;
+    
     private int splitPercentage = 100;
     private boolean splitTrainTest = false;
     private double maxError;
@@ -64,6 +68,18 @@ public class AutoTrainer implements Trainer {
 
     /**
      * Set range for hidden neurons of neural network. Auto trainer is looping
+     * through that range with increment equals to step. 
+     *
+     * @param range given for hidden neurons
+     */
+    public AutoTrainer setHiddenNeurons(Range range, int step) {
+        this.minHiddenNeurons = (int) range.getMin();
+        this.maxHiddenNeurons = (int) range.getMax();
+        this.hiddenNeuronsStep = step;
+        return this;
+    }
+    /**
+     * Set range for hidden neurons of neural network. Auto trainer is looping
      * through that range.
      *
      * @param range given for hidden neurons
@@ -73,8 +89,19 @@ public class AutoTrainer implements Trainer {
         this.maxHiddenNeurons = (int) range.getMax();
         return this;
     }
-
     /**
+     * Set range for learning rate of neural network. Auto trainer is looping
+     * through that range with increment equals to step.
+     *
+     * @param range given for learning rate
+     */
+    public AutoTrainer setLearningRate(Range range, double step) {
+        this.minLearningRate = range.getMin();
+        this.maxLearningRate = range.getMax();
+        learningRateStep = step;
+        return this;
+    }
+/**
      * Set range for learning rate of neural network. Auto trainer is looping
      * through that range.
      *
@@ -85,7 +112,6 @@ public class AutoTrainer implements Trainer {
         this.maxLearningRate = range.getMax();
         return this;
     }
-
     public double getMaxError() {
         return maxError;
     }
@@ -138,7 +164,7 @@ public class AutoTrainer implements Trainer {
      *
      * @return if statistic is enabled
      */
-    public boolean generatesStatistics() {
+    protected boolean generatesStatistics() {
         return generateStatistics;
     }
 
@@ -157,29 +183,27 @@ public class AutoTrainer implements Trainer {
      *
      * @return true if split
      */
-    public boolean isSplitForTesting() {
+    protected boolean isSplitForTesting() {
         return splitTrainTest;
     }
 
     private void generateTrainingSettings() {
         double pom = minLearningRate;
-        while (minHiddenNeurons <= maxHiddenNeurons) {
-            while (minLearningRate <= maxLearningRate) {
+        for (int hiddenNeurons = minHiddenNeurons; hiddenNeurons <= maxHiddenNeurons; hiddenNeurons+= hiddenNeuronsStep) {
+            for (double learningRate = minLearningRate; learningRate <= maxLearningRate; learningRate+=learningRateStep) {
                 //MOMENTUM for (double momentum = 0.1; momentum < maxMomentum; momentum += 0.1) { proveriti za sta je potreban momentum i kako se koristi!
                 TrainingSettings ts = new TrainingSettings()
-                        .setHiddenNeurons(minHiddenNeurons)
-                        .setLearningRate(minLearningRate)
+                        .setHiddenNeurons(hiddenNeurons)
+                        .setLearningRate(learningRate)
                         .setMaxError(getMaxError())
                         .setMaxIterations(getMaxIterations());
                 
                 this.trainingSettingsList.add(ts);
-                minLearningRate += 0.1;
                 //}
             }
             minLearningRate = pom;
-            minHiddenNeurons++;
         }
-        System.out.println("Generated : " + this.trainingSettingsList.size() + " settings.");
+        LOGGER.log(Level.INFO, "Generated : {0} settings.", this.trainingSettingsList.size());
     }
 
     @Override
@@ -200,17 +224,11 @@ public class AutoTrainer implements Trainer {
         List<TrainingResult> statResults = null;
         DataSet trainingSet, testSet; // validationSet;
 
-        // dataSet.split(sizePercents)
-        // 1. ako nema samplinga : trening set = dataset. testSet = dataset
-        // 2. ako ima samplnga : trening set = % dataseta. test set = % dataseta
-        // 3. idradi proceduru treninga sa training setom
-        // 4. odradi testiranje sa test setom
         if (splitTrainTest) {
             DataSet[] dataSplit = dataSet.sample(splitPercentage); //opet ne radi Maven za neuroph 2.92
             trainingSet = dataSplit[0];
             testSet = dataSplit[1];
-           // System.out.println("Data set splited: Training set " + splitPercentage + ", Test set " + (100 - splitPercentage));
-        } else { // use entire dataset for training and testing
+        } else { 
             trainingSet = dataSet;
             testSet = dataSet;
         }
@@ -226,10 +244,9 @@ public class AutoTrainer implements Trainer {
             System.out.println("##TRAINING: " + trainingNo);
             ts.setTrainingSet(splitPercentage);
             ts.setTestSet(100 - splitPercentage);
-            int subtrainNo = 0;
+            //int subtrainNo = 0;
 
-            do {
-               subtrainNo++;
+            for(int subtrainNo = 1; subtrainNo <= repeat; subtrainNo++) {
                System.out.println("#SubTraining: " + subtrainNo);
                         
                 MultiLayerPerceptron neuralNet
@@ -253,13 +270,12 @@ public class AutoTrainer implements Trainer {
                     results.add(result);
                 }
 
-            } while (subtrainNo < repeat);
+            }
             
             if (generateStatistics) {
                 TrainingResult trainingStats = calculateTrainingStatistics(ts, statResults);
                 results.add(trainingStats);
                 statResults.clear();
-//                System.out.println("Done statistic: #Training: " + trainingNo);
             }
 
         }
@@ -275,18 +291,14 @@ public class AutoTrainer implements Trainer {
 
         result.setMSE(MSEStat);
         result.setIterationStat(iterationsStat);
-
+        
         return result;
     }
 
-    private void testNeuralNetwork(MultiLayerPerceptron neuralNet, DataSet testingSet) {
-        for (DataSetRow testSetRow : testingSet.getRows()) {
+    private void testNeuralNetwork(MultiLayerPerceptron neuralNet, DataSet testSet) {
+        for (DataSetRow testSetRow : testSet.getRows()) {
             neuralNet.setInput(testSetRow.getInput());
             neuralNet.calculate();
-            double[] networkOutput = neuralNet.getOutput();
-//
-//            System.out.print("Input: " + Arrays.toString(testSetRow.getInput()));
-//            System.out.println(" Output: " + Arrays.toString(networkOutput));
         }
     }
 

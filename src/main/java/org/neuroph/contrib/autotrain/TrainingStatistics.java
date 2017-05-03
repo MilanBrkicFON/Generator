@@ -5,7 +5,6 @@
  */
 package org.neuroph.contrib.autotrain;
 
-import org.neuroph.contrib.autotrain.TrainingResult;
 import java.util.List;
 
 /**
@@ -138,20 +137,80 @@ public class TrainingStatistics {
         return new TrainingStatistics(minIt, maxIt, meanIt, stdIt);
     }
 
+    public static TrainingStatistics calculateStatistic(double[] array) {
+        double min = array[0];
+        double max = array[0];
+        double mean = 0;
+        double std = 0;
+        
+        double sum = 0;
+
+        for(int i = 0; i < array.length; i++){
+            if(array[i] < min){
+                min = array[i];
+            }
+            if(array[i] > max){
+                max = array[i];
+            }
+            sum += array[i];
+            
+        }
+        mean = sum / array.length;
+        
+        std = std(mean, array);
+        
+        return new TrainingStatistics(min, max, mean, std);
+    }
+    
+    private static TrainingStatistics calculateStatistic(int[] array) {
+        int min = array[0];
+        int max = array[0];
+        double mean = 0;
+        double std = 0;
+        
+        int sum = 0;
+
+        for(int i = 0; i < array.length; i++){
+            if(array[i] < min){
+                min = array[i];
+            }
+            if(array[i] > max){
+                max = array[i];
+            }
+            sum += array[i];
+            
+        }
+        mean = sum / array.length;
+        
+        std = std(mean, array);
+        
+        return new TrainingStatistics(min, max, mean, std);
+    }
     @Override
     public String toString() {
         return "Statistic{" + "min=" + min + ", max=" + max + ", mean=" + mean + ", std=" + std + '}';
     }
     
     
-
-    private static double std(double meanIt, double[] list) {
+    
+    private static double std(double mean, int[] sum) {
         double std = 0 ;
         
-        for(double tr : list){
-            std += Math.pow(tr - meanIt, 2); 
+        for(double temp : sum){
+            std += Math.pow(temp - mean, 2); 
         }
         
-        return Math.sqrt(std /list.length);
+        return Math.sqrt(std /sum.length);
+    }
+
+ 
+    private static double std(double mean, double[] sum) {
+        double std = 0 ;
+        
+        for(double temp : sum){
+            std += Math.pow(temp - mean, 2); 
+        }
+        
+        return Math.sqrt(std /sum.length);
     }
 }
