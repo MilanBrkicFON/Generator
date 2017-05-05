@@ -238,31 +238,31 @@ public class AutoTrainer implements Trainer {
         }
 
         int trainingNo = 0;
-        for (TrainingSettings ts : trainingSettingsList) {
+        for (TrainingSettings trainingSetting : trainingSettingsList) {
             System.out.println("-----------------------------------------------------------------------------------");
             trainingNo++;
             System.out.println("##TRAINING: " + trainingNo);
-            ts.setTrainingSet(splitPercentage);
-            ts.setTestSet(100 - splitPercentage);
+            trainingSetting.setTrainingSet(splitPercentage);
+            trainingSetting.setTestSet(100 - splitPercentage);
             //int subtrainNo = 0;
 
             for(int subtrainNo = 1; subtrainNo <= repeat; subtrainNo++) {
                System.out.println("#SubTraining: " + subtrainNo);
                         
                 MultiLayerPerceptron neuralNet
-                        = new MultiLayerPerceptron(dataSet.getInputSize(), ts.getHiddenNeurons(), dataSet.getOutputSize());
+                        = new MultiLayerPerceptron(dataSet.getInputSize(), trainingSetting.getHiddenNeurons(), dataSet.getOutputSize());
                 
                 BackPropagation bp = neuralNet.getLearningRule();
 
-                bp.setLearningRate(ts.getLearningRate());
-                bp.setMaxError(ts.getMaxError());
-                bp.setMaxIterations(ts.getMaxIterations());
+                bp.setLearningRate(trainingSetting.getLearningRate());
+                bp.setMaxError(trainingSetting.getMaxError());
+                bp.setMaxIterations(trainingSetting.getMaxIterations());
 
-                neuralNet.learn(dataSet);
+                neuralNet.learn(trainingSet);
 
-                testNeuralNetwork(neuralNet, testSet);
-                TrainingResult result = new TrainingResult(ts, bp.getTotalNetworkError(), bp.getCurrentIteration());
-                System.out.println(subtrainNo + ") " + bp.getCurrentIteration());
+              //  testNeuralNetwork(neuralNet, testSet); // not implemented
+                TrainingResult result = new TrainingResult(trainingSetting, bp.getTotalNetworkError(), bp.getCurrentIteration());
+                System.out.println(subtrainNo + ") iterations: " + bp.getCurrentIteration());
             
                 if (generateStatistics) {
                     statResults.add(result);
@@ -273,7 +273,7 @@ public class AutoTrainer implements Trainer {
             }
             
             if (generateStatistics) {
-                TrainingResult trainingStats = calculateTrainingStatistics(ts, statResults);
+                TrainingResult trainingStats = calculateTrainingStatistics(trainingSetting, statResults);
                 results.add(trainingStats);
                 statResults.clear();
             }
@@ -296,6 +296,7 @@ public class AutoTrainer implements Trainer {
     }
 
     private void testNeuralNetwork(MultiLayerPerceptron neuralNet, DataSet testSet) {
+        // not implemented
         for (DataSetRow testSetRow : testSet.getRows()) {
             neuralNet.setInput(testSetRow.getInput());
             neuralNet.calculate();

@@ -25,11 +25,11 @@ public class RunExample {
 
     public static void main(String[] args) {
         AutoTrainer trainer = new AutoTrainer()
-                .setMaxError(0.01)
+                .setMaxError(0.01) // isto ranhe?
                 .setMaxIterations(20000)
-                .setTransferFunction(TransferFunctionType.TRAPEZOID)
-                .setHiddenNeurons(new Range(10, 20),2)    // kako dodati jos slojeva neurona?
-                .setLearningRate(new Range(0.3, 0.9),0.3)
+                .setTransferFunction(TransferFunctionType.TANH)
+                .setHiddenNeurons(new Range(10, 20), 2)    // kako dodati jos slojeva neurona?
+                .setLearningRate(new Range(0.3, 0.9), 0.3)
                 .repeat(5)
                 .setTrainTestSplit(70);
 
