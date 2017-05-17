@@ -36,7 +36,7 @@ public class Util {
         boolean stat = trainer.generatesStatistics();
 
         //creating header of document
-        sb.append("Learinig rate, Hidden Neurons, Momentum, ");
+        sb.append("Learinig rate, Hidden Neurons, Momentum, Max Error, ");
         boolean pom = true;
         if (split) {
             sb.append("training set, test set, ");
@@ -57,11 +57,14 @@ public class Util {
             double lr = tr.getSettings().getLearningRate();
             int hidden = tr.getSettings().getHiddenNeurons();
             double momentum = tr.getSettings().getMomentum();
+            double error = tr.getSettings().getMaxError();
             sb.append(lr);
             sb.append(',');
             sb.append(hidden);
             sb.append(',');
             sb.append(momentum);
+            sb.append(',');
+            sb.append(error);
             sb.append(',');
             if (split) {
                 sb.append(tr.getSettings().getTrainingSet());

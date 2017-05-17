@@ -16,6 +16,7 @@ import org.neuroph.util.TransferFunctionType;
  * @author Milan
  */
 public class AutoTrainer implements Trainer {
+
     private final static Logger LOGGER = Logger.getLogger(AutoTrainer.class.getName());
     private List<TrainingSettings> trainingSettingsList;
 
@@ -25,19 +26,23 @@ public class AutoTrainer implements Trainer {
     private int maxHiddenNeurons;
     private int minHiddenNeurons;
     private int hiddenNeuronsStep = 1;
-    
+
     private double minLearningRate;
     private double maxLearningRate;
     private double learningRateStep = 0.1;
-    
+
     private double maxMomentum = 0.9;
-    
+
     private int splitPercentage = 100;
     private boolean splitTrainTest = false;
-    private double maxError;
+
+    private double maxErrorMin;
+    private double maxErrorMax;
+    private double maxErrorStep = 0.01;
+
     private int maxIterations;
     private TransferFunctionType transferFunction;
-    
+
     private boolean generateStatistics = false;
     private int repeat = 1;
 
@@ -52,9 +57,10 @@ public class AutoTrainer implements Trainer {
 
     public AutoTrainer(double maxError, int maxIterations) {
         this();
-        this.maxError = maxError;
+        this.maxErrorMin = maxError;
         this.maxIterations = maxIterations;
     }
+
     /**
      * Get results.
      *
@@ -68,7 +74,32 @@ public class AutoTrainer implements Trainer {
 
     /**
      * Set range for hidden neurons of neural network. Auto trainer is looping
-     * through that range with increment equals to step. 
+     * through that range with increment equals to step.
+     *
+     * @param range given for hidden neurons
+     */
+    public AutoTrainer setHiddenNeurons(int minHiddenNeurons, int maxHiddenNeurons, int step) {
+        this.minHiddenNeurons = minHiddenNeurons;
+        this.maxHiddenNeurons = maxHiddenNeurons;
+        this.hiddenNeuronsStep = step;
+        return this;
+    }
+
+    /**
+     * Set range for hidden neurons of neural network. Auto trainer is looping
+     * through that range.
+     *
+     * @param range given for hidden neurons
+     */
+    public AutoTrainer setHiddenNeurons(int minHiddenNeurons, int maxHiddenNeurons) {
+        this.minHiddenNeurons = minHiddenNeurons;
+        this.maxHiddenNeurons = maxHiddenNeurons;
+        return this;
+    }
+
+    /**
+     * Set range for hidden neurons of neural network. Auto trainer is looping
+     * through that range with increment equals to step.
      *
      * @param range given for hidden neurons
      */
@@ -78,6 +109,7 @@ public class AutoTrainer implements Trainer {
         this.hiddenNeuronsStep = step;
         return this;
     }
+
     /**
      * Set range for hidden neurons of neural network. Auto trainer is looping
      * through that range.
@@ -89,6 +121,82 @@ public class AutoTrainer implements Trainer {
         this.maxHiddenNeurons = (int) range.getMax();
         return this;
     }
+
+    /**
+     * Set range for maximum error of neural network. Auto trainer is looping
+     * through that range with increment equals to step.
+     *
+     * @param range given for hidden neurons
+     */
+    public AutoTrainer setMaxError(double maxErrorMin, double maxErrorMax, double step) {
+        this.maxErrorMin = maxErrorMin;
+        this.maxErrorMax = maxErrorMax;
+        this.maxErrorStep = step;
+        return this;
+    }
+
+    /**
+     * Set range for maximum error of neural network. Auto trainer is looping
+     * through that range.
+     *
+     * @param range given for hidden neurons
+     */
+    public AutoTrainer setMaxError(double maxErrorMin, double maxErrorMax) {
+        this.maxErrorMin = maxErrorMin;
+        this.maxErrorMax = maxErrorMax;
+        return this;
+    }
+
+    /**
+     * Set range for maximum error of neural network. Auto trainer is looping
+     * through that range with increment equals to step.
+     *
+     * @param range given for hidden neurons
+     */
+    public AutoTrainer setMaxError(Range range, double step) {
+        this.maxErrorMin = range.getMin();
+        this.maxErrorMax = range.getMax();
+        this.maxErrorStep = step;
+        return this;
+    }
+
+    /**
+     * Set range for maximum error of neural network. Auto trainer is looping
+     * through that range.
+     *
+     * @param range given for hidden neurons
+     */
+    public AutoTrainer setMaxError(Range range) {
+        this.maxErrorMin = range.getMin();
+        this.maxErrorMax = range.getMax();
+        return this;
+    }
+
+    /**
+     * Set range for learning rate of neural network. Auto trainer is looping
+     * through that range with increment equals to step.
+     *
+     * @param range given for learning rate
+     */
+    public AutoTrainer setLearningRate(double minLearningRate, double maxLearningRate, double step) {
+        this.minLearningRate = minLearningRate;
+        this.maxLearningRate = maxLearningRate;
+        learningRateStep = step;
+        return this;
+    }
+
+    /**
+     * Set range for learning rate of neural network. Auto trainer is looping
+     * through that range.
+     *
+     * @param range given for learning rate
+     */
+    public AutoTrainer setLearningRate(double minLearningRate, double maxLearningRate) {
+        this.minLearningRate = minLearningRate;
+        this.maxLearningRate = maxLearningRate;
+        return this;
+    }
+
     /**
      * Set range for learning rate of neural network. Auto trainer is looping
      * through that range with increment equals to step.
@@ -101,7 +209,8 @@ public class AutoTrainer implements Trainer {
         learningRateStep = step;
         return this;
     }
-/**
+
+    /**
      * Set range for learning rate of neural network. Auto trainer is looping
      * through that range.
      *
@@ -110,14 +219,6 @@ public class AutoTrainer implements Trainer {
     public AutoTrainer setLearningRate(Range range) {
         this.minLearningRate = range.getMin();
         this.maxLearningRate = range.getMax();
-        return this;
-    }
-    public double getMaxError() {
-        return maxError;
-    }
-
-    public AutoTrainer setMaxError(double maxError) {
-        this.maxError = maxError;
         return this;
     }
 
@@ -138,8 +239,7 @@ public class AutoTrainer implements Trainer {
         this.transferFunction = transferFunction;
         return this;
     }
-    
-    
+
     /**
      *
      * @param maxMomentum
@@ -148,9 +248,9 @@ public class AutoTrainer implements Trainer {
         this.maxMomentum = maxMomentum;
     }
 
-
     /**
-     * Repeat neural network with same parameters specified number of times and create statistic.
+     * Repeat neural network with same parameters specified number of times and
+     * create statistic.
      *
      * @param times to repeat network
      */
@@ -189,17 +289,19 @@ public class AutoTrainer implements Trainer {
 
     private void generateTrainingSettings() {
         double pom = minLearningRate;
-        for (int hiddenNeurons = minHiddenNeurons; hiddenNeurons <= maxHiddenNeurons; hiddenNeurons+= hiddenNeuronsStep) {
-            for (double learningRate = minLearningRate; learningRate <= maxLearningRate; learningRate+=learningRateStep) {
+        for (int hiddenNeurons = minHiddenNeurons; hiddenNeurons <= maxHiddenNeurons; hiddenNeurons += hiddenNeuronsStep) {
+            for (double learningRate = minLearningRate; learningRate <= maxLearningRate; learningRate += learningRateStep) {
                 //MOMENTUM for (double momentum = 0.1; momentum < maxMomentum; momentum += 0.1) { proveriti za sta je potreban momentum i kako se koristi!
-                TrainingSettings ts = new TrainingSettings()
-                        .setHiddenNeurons(hiddenNeurons)
-                        .setLearningRate(learningRate)
-                        .setMaxError(getMaxError())
-                        .setMaxIterations(getMaxIterations());
-                
-                this.trainingSettingsList.add(ts);
-                //}
+                for (double maxError = maxErrorMin; maxError <= maxErrorMax; maxError += maxErrorStep) {
+                    TrainingSettings ts = new TrainingSettings()
+                            .setHiddenNeurons(hiddenNeurons)
+                            .setLearningRate(learningRate)
+                            .setMaxError(maxError)
+                            .setMaxIterations(getMaxIterations());
+
+                    this.trainingSettingsList.add(ts);
+                    //}
+                }
             }
             minLearningRate = pom;
         }
@@ -209,14 +311,14 @@ public class AutoTrainer implements Trainer {
     @Override
     public void train(NeuralNetwork neuralNet, DataSet dataSet) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }    
-    
+    }
+
     /**
      *
      * You can get results calling getResults() method.
      *
      * @param neuralNetwork type of neural net
-     * @param dataSet 
+     * @param dataSet
      */
     @Override
     public void train(DataSet dataSet) {// mozda da se vrati Training setting koji je najbolje resenje za dati dataset.??
@@ -228,7 +330,7 @@ public class AutoTrainer implements Trainer {
             DataSet[] dataSplit = dataSet.sample(splitPercentage); //opet ne radi Maven za neuroph 2.92
             trainingSet = dataSplit[0];
             testSet = dataSplit[1];
-        } else { 
+        } else {
             trainingSet = dataSet;
             testSet = dataSet;
         }
@@ -245,13 +347,13 @@ public class AutoTrainer implements Trainer {
             trainingSetting.setTrainingSet(splitPercentage);
             trainingSetting.setTestSet(100 - splitPercentage);
             //int subtrainNo = 0;
+             
+            for (int subtrainNo = 1; subtrainNo <= repeat; subtrainNo++) {
+                System.out.println("#SubTraining: " + subtrainNo);
 
-            for(int subtrainNo = 1; subtrainNo <= repeat; subtrainNo++) {
-               System.out.println("#SubTraining: " + subtrainNo);
-                        
                 MultiLayerPerceptron neuralNet
                         = new MultiLayerPerceptron(dataSet.getInputSize(), trainingSetting.getHiddenNeurons(), dataSet.getOutputSize());
-                
+
                 BackPropagation bp = neuralNet.getLearningRule();
 
                 bp.setLearningRate(trainingSetting.getLearningRate());
@@ -259,11 +361,10 @@ public class AutoTrainer implements Trainer {
                 bp.setMaxIterations(trainingSetting.getMaxIterations());
 
                 neuralNet.learn(trainingSet);
-
-              //  testNeuralNetwork(neuralNet, testSet); // not implemented
+//                  testNeuralNetwork(neuralNet, testSet); // not implemented
                 TrainingResult result = new TrainingResult(trainingSetting, bp.getTotalNetworkError(), bp.getCurrentIteration());
                 System.out.println(subtrainNo + ") iterations: " + bp.getCurrentIteration());
-            
+
                 if (generateStatistics) {
                     statResults.add(result);
                 } else {
@@ -271,7 +372,7 @@ public class AutoTrainer implements Trainer {
                 }
 
             }
-            
+
             if (generateStatistics) {
                 TrainingResult trainingStats = calculateTrainingStatistics(trainingSetting, statResults);
                 results.add(trainingStats);
@@ -291,7 +392,7 @@ public class AutoTrainer implements Trainer {
 
         result.setMSE(MSEStat);
         result.setIterationStat(iterationsStat);
-        
+
         return result;
     }
 
@@ -302,6 +403,5 @@ public class AutoTrainer implements Trainer {
             neuralNet.calculate();
         }
     }
-
 
 }
